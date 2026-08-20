@@ -21,7 +21,7 @@ export const Telescopes: React.FC = () => {
     <section
       id="telescopes"
       aria-labelledby="telescopes-heading"
-      className="py-16 bg-transparent border-t border-slate-800/80 scroll-mt-20 relative"
+      className="py-16 bg-[#040711] border-t border-slate-800/80 scroll-mt-20 relative"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         

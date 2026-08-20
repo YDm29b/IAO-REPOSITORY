@@ -1,0 +1,214 @@
+{
+  "customers": [
+    {
+      "id": "cust_1787160933790_01l5ni",
+      "name": "Ahmad Khan",
+      "email": "ahmad.khan@example.com",
+      "phone": "+92 300 1234567",
+      "createdAt": "2026-08-19T17:35:33.790Z"
+    },
+    {
+      "id": "cust_1787160933963_n7niye",
+      "name": "Sara Ali",
+      "email": "sara.ali@example.com",
+      "phone": "+92 321 9876543",
+      "createdAt": "2026-08-19T17:35:33.963Z"
+    },
+    {
+      "id": "cust_1787160934136_857w4k",
+      "name": "Usman Farooq",
+      "email": "usman.f@example.com",
+      "phone": "+92 333 5551212",
+      "createdAt": "2026-08-19T17:35:34.136Z"
+    },
+    {
+      "id": "cust_1787170586498_rg6eia",
+      "name": "Reopened Test Visitor",
+      "email": "reopened@example.com",
+      "phone": "+92 300 1111111",
+      "createdAt": "2026-08-19T20:16:26.498Z"
+    },
+    {
+      "id": "cust_1787170586704_3za8y8",
+      "name": "Free Session Visitor",
+      "email": "freesession@example.com",
+      "phone": "+92 300 2222222",
+      "createdAt": "2026-08-19T20:16:26.704Z"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "book_1787160933790_wgyuze",
+      "bookingReference": "IAO-2026-4PZZA",
+      "customerId": "cust_1787160933790_01l5ni",
+      "customer": {
+        "id": "cust_1787160933790_01l5ni",
+        "name": "Ahmad Khan",
+        "email": "ahmad.khan@example.com",
+        "phone": "+92 300 1234567",
+        "createdAt": "2026-08-19T17:35:33.790Z"
+      },
+      "date": "2026-08-25",
+      "slotId": 4,
+      "slotTime": "8:30 PM – 9:30 PM",
+      "sessionType": "night",
+      "numberOfPeople": 4,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 1500,
+      "createdAt": "2026-08-19T17:35:33.790Z",
+      "updatedAt": "2026-08-19T17:35:34.482Z",
+      "paymentId": "tx_1787160934480"
+    },
+    {
+      "id": "book_1787160933963_3jonvu",
+      "bookingReference": "IAO-2026-GKSLR",
+      "customerId": "cust_1787160933963_n7niye",
+      "customer": {
+        "id": "cust_1787160933963_n7niye",
+        "name": "Sara Ali",
+        "email": "sara.ali@example.com",
+        "phone": "+92 321 9876543",
+        "createdAt": "2026-08-19T17:35:33.963Z"
+      },
+      "date": "2026-08-25",
+      "slotId": 4,
+      "slotTime": "8:30 PM – 9:30 PM",
+      "sessionType": "night",
+      "numberOfPeople": 2,
+      "status": "PENDING_PAYMENT",
+      "paymentStatus": "PENDING",
+      "amountPaid": 0,
+      "createdAt": "2026-08-19T17:35:33.963Z",
+      "updatedAt": "2026-08-19T17:35:33.963Z"
+    },
+    {
+      "id": "book_1787160934136_skb6rl",
+      "bookingReference": "IAO-2026-2BQK2",
+      "customerId": "cust_1787160934136_857w4k",
+      "customer": {
+        "id": "cust_1787160934136_857w4k",
+        "name": "Usman Farooq",
+        "email": "usman.f@example.com",
+        "phone": "+92 333 5551212",
+        "createdAt": "2026-08-19T17:35:34.136Z"
+      },
+      "date": "2026-08-25",
+      "slotId": 4,
+      "slotTime": "8:30 PM – 9:30 PM",
+      "sessionType": "night",
+      "numberOfPeople": 5,
+      "status": "PENDING_PAYMENT",
+      "paymentStatus": "PENDING",
+      "amountPaid": 0,
+      "createdAt": "2026-08-19T17:35:34.136Z",
+      "updatedAt": "2026-08-19T17:35:34.136Z"
+    },
+    {
+      "id": "book_1787170586498_tamoy5",
+      "bookingReference": "IAO-2026-M6VTT",
+      "customerId": "cust_1787170586498_rg6eia",
+      "customer": {
+        "id": "cust_1787170586498_rg6eia",
+        "name": "Reopened Test Visitor",
+        "email": "reopened@example.com",
+        "phone": "+92 300 1111111",
+        "createdAt": "2026-08-19T20:16:26.498Z"
+      },
+      "date": "2026-08-28",
+      "slotId": 1,
+      "slotTime": "7:00 AM – 8:00 AM",
+      "sessionType": "solar",
+      "numberOfPeople": 3,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 0,
+      "createdAt": "2026-08-19T20:16:26.498Z",
+      "updatedAt": "2026-08-19T20:16:26.731Z"
+    },
+    {
+      "id": "book_1787170586704_im1os5",
+      "bookingReference": "IAO-2026-W58CL",
+      "customerId": "cust_1787170586704_3za8y8",
+      "customer": {
+        "id": "cust_1787170586704_3za8y8",
+        "name": "Free Session Visitor",
+        "email": "freesession@example.com",
+        "phone": "+92 300 2222222",
+        "createdAt": "2026-08-19T20:16:26.704Z"
+      },
+      "date": "2026-08-28",
+      "slotId": 2,
+      "slotTime": "8:00 AM – 9:00 AM",
+      "sessionType": "solar",
+      "numberOfPeople": 1,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 1500,
+      "createdAt": "2026-08-19T20:16:26.704Z",
+      "updatedAt": "2026-08-19T20:16:26.704Z"
+    },
+    {
+      "id": "book_1787170621912_t7rp0k",
+      "bookingReference": "IAO-2026-KT9VJ",
+      "customerId": "cust_1787170586498_rg6eia",
+      "customer": {
+        "id": "cust_1787170586498_rg6eia",
+        "name": "Reopened Test Visitor",
+        "email": "reopened@example.com",
+        "phone": "+92 300 1111111",
+        "createdAt": "2026-08-19T20:16:26.498Z"
+      },
+      "date": "2026-08-28",
+      "slotId": 1,
+      "slotTime": "7:00 AM – 8:00 AM",
+      "sessionType": "solar",
+      "numberOfPeople": 3,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 0,
+      "createdAt": "2026-08-19T20:17:01.912Z",
+      "updatedAt": "2026-08-19T20:17:02.160Z"
+    },
+    {
+      "id": "book_1787170622105_4jy13q",
+      "bookingReference": "IAO-2026-4J29U",
+      "customerId": "cust_1787170586704_3za8y8",
+      "customer": {
+        "id": "cust_1787170586704_3za8y8",
+        "name": "Free Session Visitor",
+        "email": "freesession@example.com",
+        "phone": "+92 300 2222222",
+        "createdAt": "2026-08-19T20:16:26.704Z"
+      },
+      "date": "2026-08-28",
+      "slotId": 2,
+      "slotTime": "8:00 AM – 9:00 AM",
+      "sessionType": "solar",
+      "numberOfPeople": 1,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 1500,
+      "createdAt": "2026-08-19T20:17:02.105Z",
+      "updatedAt": "2026-08-19T20:17:02.105Z"
+    }
+  ],
+  "subscribers": [
+    {
+      "id": "sub_1787160934727_3rycxg",
+      "email": "observer@sky.org",
+      "status": "UNSUBSCRIBED",
+      "createdAt": "2026-08-19T17:35:34.727Z",
+      "updatedAt": "2026-08-19T17:35:34.756Z"
+    }
+  ],
+  "slotConfig": {
+    "capacityPerSlot": 3,
+    "maxPeoplePerGroup": 5
+  },
+  "systemSettings": {
+    "bookingsOpen": true,
+    "paymentRequired": false,
+    "updatedAt": "2026-08-20T06:55:50.177Z"
+  }
+}

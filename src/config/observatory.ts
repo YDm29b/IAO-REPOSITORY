@@ -15,16 +15,34 @@ export const OBSERVATORY_CONFIG = {
   country: 'Pakistan',
   
   /**
-   * IAO Coordinates (Temporary Development Value)
-   * Status: UNCONFIRMED / PENDING OFFICIAL SURVEY
-   * Approximate location based on IST Islamabad campus coordinates.
+   * IAO Coordinates (Confirmed On-Site GPS Survey)
+   * Exact rooftop coordinates: 33°31'11.0"N 73°10'32.2"E
    */
   coordinates: {
-    latitude: 33.5222, // Degrees North (Temporary Development Approximation)
-    longitude: 73.1722, // Degrees East (Temporary Development Approximation)
+    latitude: 33.519722, // Degrees North (Confirmed On-Site GPS: 33°31'11.0"N)
+    longitude: 73.175611, // Degrees East (Confirmed On-Site GPS: 73°10'32.2"E)
     elevationMeters: 540,
-    isConfirmed: false, // Set to true only after official GPS coordinates are verified
-    note: 'Temporary development approximation — pending official IAO coordinates',
+    isConfirmed: true, // Confirmed via on-site GPS measurement
+    note: 'Official on-site GPS coordinates: 33°31\'11.0"N 73°10\'32.2"E (IST Islamabad)',
+  },
+
+  /**
+   * IAO Light Pollution & Sky Background Brightness (Confirmed 2025 Reading)
+   * Source: lightpollutionmap.info at confirmed IAO GPS coordinates (33.519722°N, 73.175611°E).
+   * 
+   * Measurement: Mean sky brightness above 30° altitude = 19.11 mag/arcsec² (Bortle Class 6).
+   * (Chosen over raw zenith value to match IAO's 35°–65° usable observing altitude range).
+   * 
+   * Historical Baseline: 2016 reading at this site was 19.89 mag/arcsec² (Bortle 5),
+   * documenting roughly 8.5%/year sky brightness degradation over the decade.
+   */
+  lightPollution: {
+    bortleScale: 6,
+    skyBackgroundMPSAS: 19.11, // mag/arcsec² (mean sky brightness above 30° altitude)
+    siteNELM: 5.0, // Naked-Eye Limiting Magnitude for point sources (Bortle 6)
+    contrastMarginMPSAS: 1.0, // Minimum contrast required: SB <= skyBackgroundMPSAS - contrastMargin
+    isConfirmed: true, // Confirmed 2025 reading from lightpollutionmap.info
+    note: 'Source: lightpollutionmap.info (2025 reading, mean >30° alt: 19.11 MPSAS / Bortle 6). 2016 baseline was 19.89 MPSAS (Bortle 5), showing ~8.5%/yr degradation.',
   },
 
   /**

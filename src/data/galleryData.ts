@@ -62,4 +62,15 @@ export const GALLERY_DATA: GalleryItem[] = [
     creditPlaceholder: 'IST Media & IAO Outreach (Placeholder Slot)',
     placeholderColor: 'from-red-950/50 via-slate-950/90 to-blue-950/50',
   },
+  {
+    id: 'placeholder-gallery-6',
+    title: 'Observatory Night Operations',
+    category: 'Observatory Grounds',
+    caption: 'Observation deck illuminated by red-spectrum night-vision LED strips during a student research session.',
+    targetObject: 'IAO Telescope Deck & Horizon',
+    equipment: 'Wide-Field Night Operations Photography [Placeholder]',
+    date: 'Observation Archive Slot [Pending IAO Photo]',
+    creditPlaceholder: 'IST Media & IAO Outreach (Placeholder Slot)',
+    placeholderColor: 'from-red-950/50 via-slate-950/90 to-blue-950/50',
+  },
 ];

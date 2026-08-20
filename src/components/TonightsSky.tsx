@@ -485,7 +485,6 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
           <div className="flex items-center gap-4 text-slate-400 font-mono text-[11px]">
             <span>Local Time: <strong className="text-white font-medium">{currentTimeStr}</strong></span>
             <span>Observable Targets: <strong className="text-emerald-400 font-medium">{skyData?.observableTargets.length || 0}</strong></span>
-            <span>Coordinates: <strong className="text-slate-300 font-medium">{OBSERVATORY_CONFIG.coordinates.latitude}°N, {OBSERVATORY_CONFIG.coordinates.longitude}°E</strong></span>
           </div>
         </div>
 
@@ -689,6 +688,11 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
                               <span className="text-[10px] text-slate-400 font-mono">
                                 • Mag {target.mag}
                               </span>
+                              {target.surfaceBrightness && (
+                                <span className="text-[10px] text-sky-400 font-mono hidden sm:inline">
+                                  • SB {target.surfaceBrightness} MPSAS
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -712,6 +716,13 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
                           <p className="text-[11px] text-slate-300 leading-relaxed pl-5 font-normal">
                             {target.telescopeReason}
                           </p>
+
+                          {target.contrastNote && (
+                            <div className="text-[10.5px] text-slate-400 pl-5 pt-1 border-t border-slate-800/60 font-light italic">
+                              <span className="text-gold-400/90 font-medium not-italic font-mono text-[10px]">Sky Contrast: </span>
+                              {target.contrastNote}
+                            </div>
+                          )}
 
                           {target.compatibleTelescopes.length > 0 && (
                             <div className="text-[10px] text-slate-400 pl-5 pt-1 border-t border-slate-800/60 flex items-center gap-1">

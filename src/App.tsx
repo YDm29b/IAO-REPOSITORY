@@ -9,20 +9,34 @@ import { Team } from './components/Team';
 import { FindUs } from './components/FindUs';
 import { Faqs } from './components/Faqs';
 import { Footer } from './components/Footer';
-import { PlaceholderPage } from './components/PlaceholderPage';
 import { LightPollution } from './components/LightPollution';
 import { Education } from './components/Education';
 import { Resources } from './components/Resources';
+import { Booking } from './components/Booking';
+import { Newsletter } from './components/Newsletter';
+import { AdminLogin } from './components/AdminLogin';
+import { AdminDashboard } from './components/AdminDashboard';
 
 export function App() {
   const [currentRoute, setCurrentRoute] = useState<string>('home');
+  const [selectedEducationTopic, setSelectedEducationTopic] = useState<string | null>(null);
+  const [adminToken, setAdminToken] = useState<string | null>(
+    sessionStorage.getItem('iao_admin_token')
+  );
 
-  // Handle hash-based routing for sub-pages & bookmarking
+  // Handle hash-based routing for sub-pages & topic deep-linking
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.replace('#/', '').replace('#', '');
-      if (['book-session', 'education', 'resources', 'newsletter', 'light-pollution'].includes(hash)) {
-        setCurrentRoute(hash);
+      const fullHash = window.location.hash.replace('#/', '').replace('#', '');
+      const [route, queryString] = fullHash.split('?');
+      
+      if (['book-session', 'education', 'resources', 'newsletter', 'light-pollution', 'admin'].includes(route)) {
+        setCurrentRoute(route);
+        if (route === 'education' && queryString) {
+          const params = new URLSearchParams(queryString);
+          const topic = params.get('topic');
+          if (topic) setSelectedEducationTopic(topic);
+        }
       } else {
         setCurrentRoute('home');
       }
@@ -33,13 +47,27 @@ export function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const navigateToPage = (route: string) => {
+  const navigateToPage = (route: string, topicId?: string) => {
     setCurrentRoute(route);
     if (route === 'home') {
       window.location.hash = '';
+    } else if (route === 'education' && topicId) {
+      setSelectedEducationTopic(topicId);
+      window.location.hash = `/${route}?topic=${topicId}`;
     } else {
       window.location.hash = `/${route}`;
     }
+  };
+
+  const handleAdminLoginSuccess = (token: string) => {
+    setAdminToken(token);
+    sessionStorage.setItem('iao_admin_token', token);
+  };
+
+  const handleAdminLogout = () => {
+    setAdminToken(null);
+    sessionStorage.removeItem('iao_admin_token');
+    navigateToPage('home');
   };
 
   return (
@@ -60,11 +88,11 @@ export function App() {
             {/* Tonight’s Sky Ephemeris & Interactive Map */}
             <TonightsSky onNavigatePage={navigateToPage} />
 
-            {/* Available Telescopes & Precision Instrumentation */}
-            <Telescopes />
-
             {/* Image Gallery Carousel */}
             <ImageGallery />
+
+            {/* Available Telescopes & Precision Instrumentation */}
+            <Telescopes />
 
             {/* Foundation & Academic Mission */}
             <Foundation />
@@ -81,14 +109,32 @@ export function App() {
         ) : currentRoute === 'light-pollution' ? (
           <LightPollution onNavigateHome={() => navigateToPage('home')} />
         ) : currentRoute === 'education' ? (
-          <Education onNavigateHome={() => navigateToPage('home')} onNavigatePage={navigateToPage} />
+          <Education 
+            onNavigateHome={() => navigateToPage('home')} 
+            onNavigatePage={navigateToPage}
+            selectedTopicId={selectedEducationTopic} 
+          />
         ) : currentRoute === 'resources' ? (
           <Resources onNavigateHome={() => navigateToPage('home')} onNavigatePage={navigateToPage} />
+        ) : currentRoute === 'book-session' ? (
+          <Booking onNavigateHome={() => navigateToPage('home')} />
+        ) : currentRoute === 'newsletter' ? (
+          <Newsletter onNavigateHome={() => navigateToPage('home')} />
+        ) : currentRoute === 'admin' ? (
+          adminToken ? (
+            <AdminDashboard 
+              token={adminToken}
+              onLogout={handleAdminLogout}
+              onNavigateHome={() => navigateToPage('home')}
+            />
+          ) : (
+            <AdminLogin 
+              onLoginSuccess={handleAdminLoginSuccess}
+              onNavigateHome={() => navigateToPage('home')}
+            />
+          )
         ) : (
-          <PlaceholderPage
-            type={currentRoute as 'book-session' | 'newsletter'}
-            onNavigateHome={() => navigateToPage('home')}
-          />
+          <Hero onNavigatePage={navigateToPage} />
         )}
       </main>
 

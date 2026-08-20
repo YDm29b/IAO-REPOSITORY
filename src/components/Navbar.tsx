@@ -17,7 +17,7 @@ import { OBSERVATORY_CONFIG } from '../config/observatory';
 import { ObservatoryLogo } from './ObservatoryLogo';
 
 interface NavbarProps {
-  onNavigatePage: (route: string) => void;
+  onNavigatePage: (route: string, subTopicId?: string) => void;
   currentRoute: string;
 }
 
@@ -83,11 +83,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigatePage, currentRoute }) 
     }
   };
 
-  const handlePageNavigation = (route: string) => {
+  const handlePageNavigation = (route: string, subTopicId?: string) => {
     setMobileMenuOpen(false);
     setAboutDropdownOpen(false);
     setEducationDropdownOpen(false);
-    onNavigatePage(route);
+    onNavigatePage(route, subTopicId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -230,41 +230,70 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigatePage, currentRoute }) 
 
             {educationDropdownOpen && (
               <div
-                className="absolute left-0 mt-1 w-72 glass-dropdown rounded-xl p-2 border border-gold-500/20 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150 z-50"
+                className="absolute left-0 mt-1 w-64 glass-dropdown rounded-xl p-2 border border-gold-500/20 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-150 z-50"
                 role="menu"
               >
-                <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-gold-400 font-semibold border-b border-slate-700/50 mb-1">
-                  Learn About Astronomy
+                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-gold-400 font-semibold border-b border-slate-700/50 mb-1">
+                  Educational Topics
                 </div>
                 <button
                   role="menuitem"
-                  onClick={() => handlePageNavigation('education')}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                  onClick={() => handlePageNavigation('education', 'astronomy-basics')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <BookOpen className="w-3.5 h-3.5 text-gold-400" />
-                    <span>Education Home</span>
-                  </div>
-                  <ChevronDown className="w-3 h-3 text-slate-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Astronomy Basics</span>
                 </button>
                 <button
                   role="menuitem"
-                  onClick={() => handleScrollTo('image-gallery')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                  onClick={() => handlePageNavigation('education', 'understanding-telescopes')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
                 >
-                  <ImageIcon className="w-3.5 h-3.5 text-gold-400" />
-                  Image Gallery
+                  <BookOpen className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Understanding Telescopes</span>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => handlePageNavigation('education', 'moon-planets')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                >
+                  <Moon className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Moon & Planets</span>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => handlePageNavigation('education', 'constellations')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Constellations</span>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => handlePageNavigation('education', 'astrophotography')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                >
+                  <ImageIcon className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Astrophotography</span>
                 </button>
                 <button
                   role="menuitem"
                   onClick={() => handlePageNavigation('light-pollution')}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Moon className="w-3.5 h-3.5 text-gold-400" />
-                    <span>Light Pollution Guide</span>
+                    <Moon className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                    <span>Light Pollution</span>
                   </div>
-                  <span className="text-[9px] text-emerald-400/80 uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Live</span>
+                  <span className="text-[9px] text-emerald-400 uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">Guide</span>
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => handlePageNavigation('education', 'astronomy-glossary')}
+                  className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-slate-200 hover:text-gold-300 hover:bg-gold-500/10 rounded-lg text-left transition-colors"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+                  <span>Astronomy Glossary</span>
                 </button>
               </div>
             )}

@@ -90,7 +90,8 @@ export interface MoonCalculation {
   illuminationPercentage: number; // 0 to 100
   altitudeDegrees: number;
   azimuthDegrees: number;
-  phaseAngleDegrees: number;
+  phaseAngleDegrees: number; // 0 to 360 degrees (ecliptic longitude phase angle: <180 = Waxing, >=180 = Waning)
+  isWaxing: boolean;
   isWithinHeroWindow: boolean; // 35° to 65°
   isAboveHorizon: boolean;
   statusText: string;
@@ -129,6 +130,10 @@ export interface CelestialTarget {
   spectralColor?: string;
   phaseFraction?: number;
   description: string;
+  surfaceBrightness?: number; // mag/arcsec² for extended objects
+  visibilityQuality?: 'prime' | 'moderate' | 'marginal' | 'washed_out';
+  contrastNote?: string;
+  isLightPollutionPass?: boolean;
 }
 
 export interface EducationTopic {
@@ -160,9 +165,127 @@ export interface ResourceItem {
   id: string;
   title: string;
   description: string;
-  type: 'guide' | 'download' | 'tool' | 'external' | 'placeholder';
+  type: 'guide' | 'download' | 'tool' | 'external' | 'placeholder' | 'video' | 'audio' | 'paper';
   status?: 'available' | 'coming-soon' | 'placeholder';
   url?: string;
   downloadUrl?: string;
   content?: string;
+  author?: string;
+  journal?: string;
+  year?: string;
+  doi?: string;
+  embedUrl?: string;
+  fileSize?: string;
 }
+
+// Observation Session Booking & Availability Types
+export type ObservationSessionType = 'solar' | 'night';
+export type ObservingConditionStatus = 'OPEN' | 'CONDITIONALLY_OPEN' | 'CLOSED';
+
+export interface ObservationSlot {
+  slotId: number; // 1 to 6
+  name: string; // e.g. "Slot 1"
+  time: string; // e.g. "7:00 AM – 8:00 AM"
+  sessionType: ObservationSessionType;
+  maxGroups: number; // 3
+  maxPeoplePerGroup: number; // 5
+  bookedGroups: number;
+  remainingSlots: number;
+  isFullyBooked: boolean;
+}
+
+export interface DayAvailability {
+  date: string; // YYYY-MM-DD
+  status: ObservingConditionStatus;
+  statusNote: string;
+  weatherSummary: {
+    cloudCover: number;
+    windSpeed: number;
+    weatherCode: number;
+    conditionText: string;
+    temperature: number;
+  };
+  slots: ObservationSlot[];
+  systemSettings?: SystemSettings;
+}
+
+export interface CustomerInput {
+  name: string;
+  email: string;
+  phone: string;
+  numberOfPeople: number; // 1 to 5
+}
+
+export interface BookingRequest extends CustomerInput {
+  date: string; // YYYY-MM-DD
+  slotId: number; // 1 to 6
+}
+
+export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type BookingStatus = 'CONFIRMED' | 'PENDING_PAYMENT' | 'CANCELLED';
+
+export interface BookingRecord {
+  id: string;
+  bookingReference: string; // e.g. IAO-2026-X89K2
+  customer: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    createdAt: string;
+  };
+  date: string;
+  slotId: number;
+  slotTime: string;
+  sessionType: ObservationSessionType;
+  numberOfPeople: number;
+  status: BookingStatus;
+  paymentStatus: PaymentStatus;
+  paymentId?: string;
+  amountPaid: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NewsletterSubscribeInput {
+  email: string;
+}
+
+export interface SubscriberRecord {
+  id: string;
+  email: string;
+  status: 'ACTIVE' | 'UNSUBSCRIBED';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SystemSettings {
+  bookingsOpen: boolean;
+  paymentRequired: boolean;
+  updatedAt?: string;
+}
+
+export interface AdminOverviewStats {
+  todayStr: string;
+  totalBookings: number;
+  confirmedBookings: number;
+  pendingBookings: number;
+  cancelledBookings: number;
+  todayBookingsCount: number;
+  todayAttendees: number;
+  totalRevenue: number;
+  totalSubscribers: number;
+  systemSettings: SystemSettings;
+}
+
+export interface DatabaseAuditStatus {
+  engine: string;
+  isProductionReady: boolean;
+  storagePath: string;
+  totalCustomers: number;
+  totalBookings: number;
+  totalSubscribers: number;
+  postgresEnvDetected: boolean;
+}
+
+

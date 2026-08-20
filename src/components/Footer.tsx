@@ -177,9 +177,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigatePage }) => {
           </div>
 
           <div className="flex items-center gap-3 text-[11px]">
-            <span>British English Spelling</span>
-            <span>•</span>
             <span>Academic & Public Outreach Platform</span>
+            <span>•</span>
+            <button
+              onClick={() => onNavigatePage('admin')}
+              className="text-slate-500 hover:text-gold-400 font-mono transition-colors"
+            >
+              Admin Portal
+            </button>
           </div>
         </div>
 

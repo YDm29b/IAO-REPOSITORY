@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, BookOpen, Mail, Moon, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Mail, Sparkles, CheckCircle2 } from 'lucide-react';
 import { OBSERVATORY_CONFIG } from '../config/observatory';
 
 interface PlaceholderPageProps {

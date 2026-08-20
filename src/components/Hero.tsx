@@ -368,11 +368,16 @@ const WeatherSceneVisual: React.FC<{ weather: WeatherData }> = ({ weather }) => 
  * Renders the clean Moon sphere directly without any outer circular wrapper box.
  */
 const MoonPhaseVisual: React.FC<{ moon: MoonCalculation }> = ({ moon }) => {
-  const { illuminationPercentage, phaseName } = moon;
+  const { illuminationPercentage, phaseName, phaseAngleDegrees, isWaxing: moonIsWaxing } = moon;
 
-  const isWaxing = phaseName.includes('Waxing') || phaseName === 'New Moon';
-  const isFullMoon = phaseName === 'Full Moon';
-  const isNewMoon = phaseName === 'New Moon';
+  // Authoritative physical signal: 0° to 180° = Waxing (right-side lit in Northern Hemisphere)
+  // 180° to 360° = Waning (left-side lit in Northern Hemisphere)
+  const isWaxing = typeof moonIsWaxing === 'boolean'
+    ? moonIsWaxing
+    : (typeof phaseAngleDegrees === 'number' ? phaseAngleDegrees < 180 : (phaseName.includes('Waxing') || phaseName.includes('First Quarter') || phaseName === 'New Moon'));
+
+  const isFullMoon = phaseName === 'Full Moon' || illuminationPercentage >= 99;
+  const isNewMoon = phaseName === 'New Moon' || illuminationPercentage <= 1;
 
   const r = 40;
   const cx = 44;
@@ -394,15 +399,19 @@ const MoonPhaseVisual: React.FC<{ moon: MoonCalculation }> = ({ moon }) => {
       illuminatedPath = `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
     } else if (isWaxing) {
       if (frac <= 0.5) {
-        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
-      } else {
+        // Waxing Crescent / First Quarter: Right outer limb, terminator curves to the right (sweep 1)
         illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
+      } else {
+        // Waxing Gibbous: Right outer limb, terminator curves to the left (sweep 0)
+        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
       }
     } else {
       if (frac <= 0.5) {
-        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
-      } else {
+        // Waning Crescent / Third Quarter: Left outer limb, terminator curves to the left (sweep 0)
         illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
+      } else {
+        // Waning Gibbous: Left outer limb, terminator curves to the right (sweep 1)
+        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
       }
     }
   }

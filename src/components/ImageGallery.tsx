@@ -81,7 +81,7 @@ export const ImageGallery: React.FC = () => {
     <section
       id="image-gallery"
       aria-labelledby="gallery-heading"
-      className="py-16 bg-[#040711] border-t border-slate-800 scroll-mt-20 relative"
+      className="py-16 bg-transparent border-t border-slate-800 scroll-mt-20 relative"
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="region"
