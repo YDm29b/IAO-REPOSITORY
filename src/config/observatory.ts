@@ -89,7 +89,7 @@ export const OBSERVATORY_CONFIG = {
    */
   contact: {
     email: 'iao@ist.edu.pk',
-    phone: '+92 51 9075100',
+    phone: '+92-51-9675799',
     address: 'Institute of Space Technology, 1 Toll Plaza, Islamabad Expressway, Islamabad 44000, Pakistan',
   },
 
@@ -105,17 +105,12 @@ export const OBSERVATORY_CONFIG = {
     {
       name: 'National Center of GIS and Space Applications (NCGSA)',
       short: 'NCGSA',
-      url: 'https://ncgsa.org.pk',
+      url: 'https://ncgsa.org.pk/',
     },
     {
       name: 'Institute of Space Technology (IST)',
       short: 'IST',
       url: 'https://ist.edu.pk',
-    },
-    {
-      name: 'Pakistan Space & Upper Atmosphere Research Commission (SUPARCO)',
-      short: 'SUPARCO',
-      url: 'https://suparco.gov.pk',
     },
   ],
 };

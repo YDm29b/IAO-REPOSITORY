@@ -51,7 +51,7 @@ export const Team: React.FC = () => {
             <div className="md:col-span-8 space-y-3.5 text-left">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-gold-500/15 text-gold-300 border border-gold-500/30">
                 <Award className="w-3.5 h-3.5 text-gold-400" />
-                <span>Executive Leadership</span>
+                <span>In Charge IAO</span>
               </div>
 
               <div>
@@ -71,9 +71,7 @@ export const Team: React.FC = () => {
               </p>
 
               <div className="pt-2.5 border-t border-slate-800 flex items-center gap-3 text-xs text-slate-400 font-mono">
-                <span>Field: Astrophotography & Telescopy</span>
-                <span>•</span>
-                <span className="text-gold-400/90">* Editable Profile Field</span>
+                <span>Astronomy Outreach Lead</span>
               </div>
             </div>
 

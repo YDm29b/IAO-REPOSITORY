@@ -8,20 +8,20 @@ import { TeamMember } from '../types';
  */
 export const OBSERVATORY_HEAD: TeamMember = {
   id: 'observatory-head',
-  name: '[Observatory Head Name — Pending IAO Assignment]',
-  role: 'Head of IST Astronomical Observatory',
+  name: 'Yawar Abbas',
+  role: 'In Charge of IST Astronomical Observatory',
   isHead: true,
-  department: 'Department of Space Science / Space & Astronomy Research Lab (SARL)',
-  bio: 'Placeholder field for the Observatory Head profile. The official biographical summary, research specialization, and institutional message will be inserted here upon IAO administrative review.',
+  department: 'Research Associate, Space & Education Research Lab (SERL), NCGSA',
+  bio: 'In Charge of IAO and conducts guided observation sessions including telescope operations.',
   avatarPlaceholder: 'observatory_head_placeholder.jpg',
 };
 
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: 'team-member-1',
-    name: '[Research Officer Name — Placeholder]',
-    role: 'Observational Astronomer & Data Analyst',
-    department: 'Space & Astronomy Research Lab (SARL)',
+    name: 'Muhammad Junaid',
+    role: 'Graduate Research Assistant',
+    department: 'Space & Astrophysics Research Lab (SARL), NCGSA',
     bio: 'Placeholder for researcher biography covering telescope operations, photometric reductions, and spectroscopic data pipelines.',
     avatarPlaceholder: 'team_member_1.jpg',
   },

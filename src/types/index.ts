@@ -51,6 +51,7 @@ export interface GalleryItem {
   creditPlaceholder: string;
   imageUrl?: string;
   placeholderColor?: string;
+  image?: string;
 }
 
 export interface TeamMember {

@@ -137,46 +137,18 @@ export const ImageGallery: React.FC = () => {
           {/* Main Slide Display */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center min-h-[380px]">
             
-            {/* Visual Media Placeholder Box (7 cols) */}
-            <div className="lg:col-span-7 relative h-[260px] sm:h-[340px] lg:h-[380px] rounded-2xl overflow-hidden border border-slate-700/80 flex flex-col justify-between p-5 sm:p-6 bg-gradient-to-br bg-slate-950 shadow-inner">
-              
-              {/* Background Simulation */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${currentItem.placeholderColor || 'from-slate-900 to-space-950'} opacity-70`} />
-              
-              {/* Star Particle Backdrop */}
-              <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-20" />
+            {/* Image Display */}
+<div className="lg:col-span-7 relative h-[260px] sm:h-[340px] lg:h-[380px] rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-950 shadow-inner">
 
-              {/* Target Graphic / Placeholder Badge */}
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-medium uppercase tracking-wider bg-space-950/80 text-gold-300 border border-gold-500/30 backdrop-blur-md">
-                  {currentItem.category}
-                </span>
+  <img
+    src={currentItem.image}
+    alt={currentItem.title}
+    className="absolute inset-0 w-full h-full object-cover"
+  />
 
-                <span className="text-[11px] font-mono text-slate-400 bg-black/60 px-2.5 py-1 rounded border border-slate-700">
-                  SLOT {String(currentIndex + 1).padStart(2, '0')} / {String(totalSlides).padStart(2, '0')}
-                </span>
-              </div>
-
-              {/* Center Stylized Placeholder Icon */}
-              <div className="relative z-10 text-center my-auto">
-                <div className="w-16 h-16 rounded-full border border-gold-500/30 bg-space-950/70 flex items-center justify-center mx-auto mb-2.5 shadow-[0_0_15px_rgba(212,175,55,0.25)]">
-                  <Camera className="w-8 h-8 text-gold-400" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-widest text-slate-300 font-medium">
-                  Genuine Image Slot
-                </div>
-                <div className="text-[10px] text-gold-400/80 font-mono mt-0.5">
-                  [Pending Official IAO Astrophotography Asset]
-                </div>
-              </div>
-
-              {/* Bottom Target Tag */}
-              <div className="relative z-10 flex items-center justify-between text-xs text-slate-300 bg-space-950/80 px-3.5 py-1.5 rounded-xl border border-slate-800 backdrop-blur-sm">
-                <span>Target: <strong className="font-medium text-white">{currentItem.targetObject}</strong></span>
-                <span className="font-mono text-gold-400 text-[11px]">IAO Archive</span>
-              </div>
-            </div>
-
+  {/* Dark overlay for readability */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+</div>
             {/* Metadata & Editorial Details (5 cols) */}
             <div className="lg:col-span-5 flex flex-col justify-between space-y-5 lg:pl-3">
               <div>
