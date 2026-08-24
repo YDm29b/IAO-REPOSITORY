@@ -34,6 +34,13 @@
       "email": "freesession@example.com",
       "phone": "+92 300 2222222",
       "createdAt": "2026-08-19T20:16:26.704Z"
+    },
+    {
+      "id": "cust_1787563496216_ke6sg9",
+      "name": "Arooj",
+      "email": "aroojfatima29b@gmail.com",
+      "phone": "+923337447345",
+      "createdAt": "2026-08-24T09:24:56.216Z"
     }
   ],
   "bookings": [
@@ -191,6 +198,28 @@
       "amountPaid": 1500,
       "createdAt": "2026-08-19T20:17:02.105Z",
       "updatedAt": "2026-08-19T20:17:02.105Z"
+    },
+    {
+      "id": "book_1787563496217_8lfaqo",
+      "bookingReference": "IAO-2026-KKF77",
+      "customerId": "cust_1787563496216_ke6sg9",
+      "customer": {
+        "id": "cust_1787563496216_ke6sg9",
+        "name": "Arooj",
+        "email": "aroojfatima29b@gmail.com",
+        "phone": "+923337447345",
+        "createdAt": "2026-08-24T09:24:56.216Z"
+      },
+      "date": "2026-08-24",
+      "slotId": 5,
+      "slotTime": "9:30 PM – 10:30 PM",
+      "sessionType": "night",
+      "numberOfPeople": 1,
+      "status": "CONFIRMED",
+      "paymentStatus": "COMPLETED",
+      "amountPaid": 1500,
+      "createdAt": "2026-08-24T09:24:56.216Z",
+      "updatedAt": "2026-08-24T09:24:56.216Z"
     }
   ],
   "subscribers": [

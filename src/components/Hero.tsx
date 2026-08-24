@@ -365,27 +365,30 @@ const WeatherSceneVisual: React.FC<{ weather: WeatherData }> = ({ weather }) => 
 
 /**
  * Geometrically accurate SVG Moon Phase Visual based on live astronomical ephemeris.
- * Renders the clean Moon sphere directly without any outer circular wrapper box.
+ * Renders the clean Moon sphere directly with authentic lunar surface features and precise terminator geometry.
  */
 const MoonPhaseVisual: React.FC<{ moon: MoonCalculation }> = ({ moon }) => {
   const { illuminationPercentage, phaseName, phaseAngleDegrees, isWaxing: moonIsWaxing } = moon;
 
-  // Authoritative physical signal: 0° to 180° = Waxing (right-side lit in Northern Hemisphere)
-  // 180° to 360° = Waning (left-side lit in Northern Hemisphere)
+  // Authoritative physical signal: 0° to 180° = Waxing (Sun to West, right-side illuminated in Northern Hemisphere)
+  // 180° to 360° = Waning (Sun to East, left-side illuminated in Northern Hemisphere)
   const isWaxing = typeof moonIsWaxing === 'boolean'
     ? moonIsWaxing
-    : (typeof phaseAngleDegrees === 'number' ? phaseAngleDegrees < 180 : (phaseName.includes('Waxing') || phaseName.includes('First Quarter') || phaseName === 'New Moon'));
+    : (typeof phaseAngleDegrees === 'number'
+        ? (phaseAngleDegrees > 0 && phaseAngleDegrees < 180)
+        : (phaseName.includes('Waxing') || phaseName.includes('First Quarter')));
 
-  const isFullMoon = phaseName === 'Full Moon' || illuminationPercentage >= 99;
-  const isNewMoon = phaseName === 'New Moon' || illuminationPercentage <= 1;
+  const frac = Math.max(0, Math.min(1, illuminationPercentage / 100));
+  const isFullMoon = phaseName === 'Full Moon' || frac >= 0.99;
+  const isNewMoon = phaseName === 'New Moon' || frac <= 0.01;
 
   const r = 40;
   const cx = 44;
   const cy = 44;
   const size = 88;
 
-  const frac = illuminationPercentage / 100;
-  const terminatorRx = r * Math.abs(2 * frac - 1);
+  // Terminator semi-minor axis: r * |2 * frac - 1|
+  const terminatorRx = Math.max(0.01, r * Math.abs(2 * frac - 1));
 
   const topX = cx;
   const topY = cy - r;
@@ -398,23 +401,28 @@ const MoonPhaseVisual: React.FC<{ moon: MoonCalculation }> = ({ moon }) => {
     if (isFullMoon) {
       illuminatedPath = `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
     } else if (isWaxing) {
-      if (frac <= 0.5) {
-        // Waxing Crescent / First Quarter: Right outer limb, terminator curves to the right (sweep 1)
-        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
-      } else {
-        // Waxing Gibbous: Right outer limb, terminator curves to the left (sweep 0)
+      // Right side illuminated (outer right semicircle from top to bottom, sweep = 1)
+      if (frac < 0.5) {
+        // Waxing Crescent: terminator is to the right of center (sweep = 0 from bottom to top)
         illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
+      } else {
+        // Waxing Gibbous & First Quarter: terminator is to the left of center (sweep = 1 from bottom to top)
+        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 1 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
       }
     } else {
-      if (frac <= 0.5) {
-        // Waning Crescent / Third Quarter: Left outer limb, terminator curves to the left (sweep 0)
-        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
-      } else {
-        // Waning Gibbous: Left outer limb, terminator curves to the right (sweep 1)
+      // Left side illuminated (outer left semicircle from top to bottom, sweep = 0)
+      if (frac < 0.5) {
+        // Waning Crescent: terminator is to the left of center (sweep = 1 from bottom to top)
         illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 1 ${topX} ${topY} Z`;
+      } else {
+        // Waning Gibbous & Third Quarter: terminator is to the right of center (sweep = 0 from bottom to top)
+        illuminatedPath = `M ${topX} ${topY} A ${r} ${r} 0 0 0 ${botX} ${botY} A ${terminatorRx} ${r} 0 0 0 ${topX} ${topY} Z`;
       }
     }
   }
+
+  // Directional lighting origin matching the illuminated lunar limb
+  const lightCx = isFullMoon ? '50%' : isWaxing ? '62%' : '38%';
 
   return (
     <div
@@ -432,49 +440,55 @@ const MoonPhaseVisual: React.FC<{ moon: MoonCalculation }> = ({ moon }) => {
           <clipPath id="moon-clip">
             <circle cx={cx} cy={cy} r={r} />
           </clipPath>
-          <radialGradient id="lit-grad" cx="52%" cy="38%" r="62%">
-            <stop offset="0%" stopColor="#f8fafc" />
-            <stop offset="50%" stopColor="#dde5f0" />
-            <stop offset="100%" stopColor="#8fa0be" />
+          <radialGradient id="lit-grad" cx={lightCx} cy="38%" r="62%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="35%" stopColor="#f1f5f9" />
+            <stop offset="70%" stopColor="#cbd5e1" />
+            <stop offset="100%" stopColor="#94a3b8" />
           </radialGradient>
           <radialGradient id="limb-dark" cx="50%" cy="50%" r="50%">
             <stop offset="68%" stopColor="transparent" />
-            <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.45" />
           </radialGradient>
         </defs>
 
-        {/* Dark lunar body */}
-        <circle cx={cx} cy={cy} r={r} fill="#07091a" />
+        {/* Dark lunar body layer */}
+        <circle cx={cx} cy={cy} r={r} fill="#080b18" />
 
-        {/* Dark-side surface texture */}
-        <g clipPath="url(#moon-clip)" opacity="0.22">
+        {/* Dark-side surface topography / subtle earthshine */}
+        <g clipPath="url(#moon-clip)" opacity="0.25">
           <ellipse cx={34} cy={30} rx={10} ry={7} fill="#1a2244" />
           <ellipse cx={52} cy={48} rx={8} ry={6} fill="#1a2244" />
           <ellipse cx={26} cy={52} rx={6} ry={5} fill="#161e3a" />
           <ellipse cx={58} cy={24} rx={5} ry={4} fill="#161e3a" />
+          <circle cx={38} cy={38} r={3.5} fill="#131a33" />
         </g>
 
-        {/* Illuminated portion with surface texture */}
+        {/* Illuminated portion with high-resolution lunar maria and craters */}
         {illuminatedPath && (
           <g clipPath="url(#moon-clip)">
             <path d={illuminatedPath} fill="url(#lit-grad)" />
-            <ellipse cx={34} cy={30} rx={10} ry={7} fill="#6b7ea0" opacity="0.28" />
-            <ellipse cx={52} cy={48} rx={8} ry={6} fill="#6b7ea0" opacity="0.22" />
-            <ellipse cx={26} cy={52} rx={6} ry={5} fill="#6b7ea0" opacity="0.18" />
-            <ellipse cx={58} cy={24} rx={5} ry={4} fill="#788aaa" opacity="0.2" />
-            <circle cx={38} cy={38} r={3.5} fill="none" stroke="#556080" strokeWidth="0.6" opacity="0.4" />
-            <circle cx={38} cy={38} r={0.9} fill="#556080" opacity="0.2" />
-            <circle cx={30} cy={24} r={2.5} fill="none" stroke="#556080" strokeWidth="0.5" opacity="0.35" />
-            <circle cx={52} cy={42} r={2} fill="none" stroke="#556080" strokeWidth="0.45" opacity="0.3" />
-            <circle cx={46} cy={30} r={1.5} fill="none" stroke="#8090b0" strokeWidth="0.4" opacity="0.28" />
-            <circle cx={24} cy={40} r={1.8} fill="none" stroke="#556080" strokeWidth="0.4" opacity="0.3" />
-            <circle cx={42} cy={54} r={1.2} fill="none" stroke="#778090" strokeWidth="0.35" opacity="0.25" />
+            {/* Lunar Maria (Oceanus Procellarum, Mare Imbrium, Mare Serenitatis, Mare Tranquillitatis) */}
+            <ellipse cx={34} cy={30} rx={10} ry={7} fill="#64748b" opacity="0.32" />
+            <ellipse cx={52} cy={48} rx={8} ry={6} fill="#64748b" opacity="0.26" />
+            <ellipse cx={26} cy={52} rx={6} ry={5} fill="#64748b" opacity="0.22" />
+            <ellipse cx={58} cy={24} rx={5} ry={4} fill="#64748b" opacity="0.24" />
+            {/* Prominent Crater Formations (Tycho, Copernicus, Kepler) */}
+            <circle cx={38} cy={38} r={3.5} fill="none" stroke="#475569" strokeWidth="0.6" opacity="0.45" />
+            <circle cx={38} cy={38} r={0.9} fill="#475569" opacity="0.25" />
+            <circle cx={30} cy={24} r={2.5} fill="none" stroke="#475569" strokeWidth="0.5" opacity="0.4" />
+            <circle cx={52} cy={42} r={2} fill="none" stroke="#475569" strokeWidth="0.45" opacity="0.35" />
+            <circle cx={46} cy={30} r={1.5} fill="none" stroke="#64748b" strokeWidth="0.4" opacity="0.32" />
+            <circle cx={24} cy={40} r={1.8} fill="none" stroke="#475569" strokeWidth="0.4" opacity="0.35" />
+            <circle cx={42} cy={54} r={1.2} fill="none" stroke="#64748b" strokeWidth="0.35" opacity="0.28" />
+            {/* Spherical 3D limb shading overlay */}
             <path d={illuminatedPath} fill="url(#limb-dark)" />
           </g>
         )}
 
-        <circle cx={cx} cy={cy} r={r - 0.5} fill="none" stroke="rgba(148,163,184,0.25)" strokeWidth="1" />
-        <circle cx={cx} cy={cy} r={r + 1.2} fill="none" stroke="rgba(212,175,55,0.18)" strokeWidth="2" />
+        {/* Outer Lunar Rim Accents */}
+        <circle cx={cx} cy={cy} r={r - 0.5} fill="none" stroke="rgba(148,163,184,0.3)" strokeWidth="1" />
+        <circle cx={cx} cy={cy} r={r + 1.2} fill="none" stroke="rgba(212,175,55,0.2)" strokeWidth="1.8" />
       </svg>
     </div>
   );
@@ -691,24 +705,41 @@ export const Hero: React.FC<HeroProps> = ({ onNavigatePage }) => {
           </div>
 
           {moonData ? (
-            /* Card Body: telemetry left, moon sphere right */
+            /* Card Body: telemetry left (fixed width), moon sphere right */
             <div className="flex items-center justify-between gap-2 my-auto">
-              {/* Narrow telemetry column */}
-              <div className="flex flex-col gap-1.5 shrink-0">
-                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800 w-fit min-w-[92px]">
+              {/* Telemetry column — fixed 104 px so it never pushes the Moon graphic */}
+              <div className="flex flex-col gap-1.5 w-[104px] flex-none overflow-hidden">
+                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800">
                   <div className="text-[8px] uppercase text-slate-400 font-medium leading-none">Altitude</div>
                   <div className="text-[10px] font-medium text-slate-200">{moonData.altitudeDegrees}°</div>
                 </div>
-                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800 w-fit min-w-[92px]">
+                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800">
                   <div className="text-[8px] uppercase text-slate-400 font-medium leading-none">Azimuth</div>
                   <div className="text-[10px] font-medium text-slate-200">{moonData.azimuthDegrees}°</div>
                 </div>
-                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800 w-fit min-w-[92px]">
+                <div className="px-2 py-1 rounded-lg bg-slate-900/70 border border-slate-800">
                   <div className="text-[8px] uppercase text-slate-400 font-medium leading-none">Phase Angle</div>
                   <div className="text-[10px] font-medium text-slate-200">{moonData.phaseAngleDegrees}°</div>
                 </div>
+                {/* Rise / Set — two equal columns filling the fixed telemetry width */}
+                <div className="grid grid-cols-2 gap-1">
+                  <div className="px-1.5 py-0.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                    <div className="text-[7.5px] uppercase text-gold-400/90 font-medium leading-none mb-0.5">Rise</div>
+                    <div className="text-[9.5px] font-mono font-medium text-slate-200 leading-tight">{moonData.riseTimeStr || '--:--'}</div>
+                    {moonData.riseIsNextDay && (
+                      <div className="text-[7px] text-slate-500 leading-none mt-0.5">tomorrow</div>
+                    )}
+                  </div>
+                  <div className="px-1.5 py-0.5 rounded-lg bg-slate-900/70 border border-slate-800">
+                    <div className="text-[7.5px] uppercase text-gold-400/90 font-medium leading-none mb-0.5">Set</div>
+                    <div className="text-[9.5px] font-mono font-medium text-slate-200 leading-tight">{moonData.setTimeStr || '--:--'}</div>
+                    {moonData.setIsNextDay && (
+                      <div className="text-[7px] text-slate-500 leading-none mt-0.5">tomorrow</div>
+                    )}
+                  </div>
+                </div>
               </div>
-              {/* Moon sphere — centered in remaining card space */}
+              {/* Moon sphere — fills remaining space, stays centred */}
               <div className="flex-1 flex items-center justify-center self-center py-1">
                 <MoonPhaseVisual moon={moonData} />
               </div>

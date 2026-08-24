@@ -398,6 +398,96 @@ export function getObserver(): Astronomy.Observer {
 }
 
 /**
+ * Calculates Moonrise and Moonset times for IAO observer coordinates on a given date.
+ * Accurately handles same-day, following-day, and day-skip phenomena.
+ * Returns clean time strings (no suffix) plus boolean flags for next-day events.
+ */
+export function calculateMoonRiseSet(date: Date = new Date()): {
+  riseTimeStr: string;
+  setTimeStr: string;
+  riseIsNextDay: boolean;
+  setIsNextDay: boolean;
+  riseDate: Date | null;
+  setDate: Date | null;
+} {
+  try {
+    const observer = getObserver();
+    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+
+    // Search for rise event occurring on the current local day (00:00 to 24:00)
+    const riseToday = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, startOfDay, 1);
+
+    // Search for set event occurring on the current local day (00:00 to 24:00)
+    const setToday = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, startOfDay, 1);
+
+    let finalRiseDate: Date | null = null;
+    let finalSetDate: Date | null = null;
+    let riseLabel = '';
+    let setLabel = '';
+    let riseIsNextDay = false;
+    let setIsNextDay = false;
+
+    const formatTime = (d: Date) => {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    };
+
+    if (riseToday) {
+      finalRiseDate = riseToday.date;
+      riseLabel = formatTime(riseToday.date);
+      // riseIsNextDay stays false — rise occurred on the current calendar day
+
+      // Search for the corresponding set that concludes this rise cycle
+      const setAfterRise = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, riseToday.date, 1.5);
+      if (setAfterRise) {
+        finalSetDate = setAfterRise.date;
+        setIsNextDay = setAfterRise.date.getDate() !== startOfDay.getDate();
+        setLabel = formatTime(setAfterRise.date);
+      } else if (setToday) {
+        finalSetDate = setToday.date;
+        setLabel = formatTime(setToday.date);
+      } else {
+        setLabel = 'Does not set today';
+      }
+    } else {
+      // Moon does not rise on this calendar day (moonrise shifted past midnight)
+      riseLabel = 'Does not rise today';
+      if (setToday) {
+        finalSetDate = setToday.date;
+        setLabel = formatTime(setToday.date);
+      } else {
+        const nextSet = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, startOfDay, 2);
+        if (nextSet) {
+          finalSetDate = nextSet.date;
+          setIsNextDay = nextSet.date.getDate() !== startOfDay.getDate();
+          setLabel = formatTime(nextSet.date);
+        } else {
+          setLabel = 'Does not set today';
+        }
+      }
+    }
+
+    return {
+      riseTimeStr: riseLabel,
+      setTimeStr: setLabel,
+      riseIsNextDay,
+      setIsNextDay,
+      riseDate: finalRiseDate,
+      setDate: finalSetDate,
+    };
+  } catch (err) {
+    console.error('Failed to compute lunar rise/set:', err);
+    return {
+      riseTimeStr: '--:--',
+      setTimeStr: '--:--',
+      riseIsNextDay: false,
+      setIsNextDay: false,
+      riseDate: null,
+      setDate: null,
+    };
+  }
+}
+
+/**
  * Calculates current Moon status and altitude/azimuth at IAO
  */
 export function calculateMoonData(date: Date = new Date()): MoonCalculation | null {
@@ -441,6 +531,8 @@ export function calculateMoonData(date: Date = new Date()): MoonCalculation | nu
       }
     }
 
+    const { riseTimeStr, setTimeStr, riseIsNextDay, setIsNextDay } = calculateMoonRiseSet(date);
+
     return {
       phaseName,
       illuminationFraction: illum.phase_fraction,
@@ -453,6 +545,10 @@ export function calculateMoonData(date: Date = new Date()): MoonCalculation | nu
       isAboveHorizon,
       statusText,
       ageDays: parseFloat((moonPhaseAngle / 360 * 29.53).toFixed(1)),
+      riseTimeStr,
+      setTimeStr,
+      riseIsNextDay,
+      setIsNextDay,
     };
   } catch (err) {
     console.error('Failed to compute lunar astronomy data:', err);
@@ -651,7 +747,7 @@ export function evaluateLightPollutionVisibility(target: {
 export function calculateVisibleSkyObjects(date: Date = new Date()): {
   stars: Array<SkyObject & { spectralColor: string; isVisible: boolean; isWithinWindow: boolean }>;
   planets: Array<SkyObject & { isVisible: boolean; isWithinWindow: boolean; color: string }>;
-  moon: SkyObject & { isVisible: boolean; isWithinWindow: boolean; phaseFraction: number; phaseName: string };
+  moon: SkyObject & { isVisible: boolean; isWithinWindow: boolean; phaseFraction: number; phaseName: string; phaseAngleDegrees?: number; isWaxing?: boolean };
   sun: SkyObject & { isVisible: boolean; isWithinWindow: boolean };
   deepSky: Array<SkyObject & { isVisible: boolean; isWithinWindow: boolean; categoryLabel: string }>;
   observableTargets: CelestialTarget[];
@@ -847,6 +943,8 @@ export function calculateVisibleSkyObjects(date: Date = new Date()): {
     isWithinWindow: moonIsWithinWindow,
     phaseFraction: moonIllum.phase_fraction,
     phaseName: moonPhaseName,
+    phaseAngleDegrees: moonCalc ? moonCalc.phaseAngleDegrees : parseFloat(Astronomy.MoonPhase(date).toFixed(1)),
+    isWaxing: moonCalc ? moonCalc.isWaxing : (Astronomy.MoonPhase(date) > 0 && Astronomy.MoonPhase(date) < 180),
   };
 
   // 4. Calculate Sun

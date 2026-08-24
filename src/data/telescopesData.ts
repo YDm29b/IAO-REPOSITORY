@@ -21,7 +21,7 @@ export const TELESCOPES_DATA: Telescope[] = [
       focus: 'Zero Image-Shift Microfocuser or internal primary-mirror lock',
       power: '12 V DC or 115 V AC adapter',
     },
-    imagePlaceholder: 'meade_16inch_altaz.png',
+    image: '/images/telescopes/meade16.jpg',
   },
   {
     id: 'meade-10-inch',
@@ -43,7 +43,7 @@ export const TELESCOPES_DATA: Telescope[] = [
       focus: 'Internal primary-mirror translation mechanism',
       tube: 'Closed optical tube assembly to limit dust',
     },
-    imagePlaceholder: 'meade_10inch_altaz.png',
+    image: '/images/telescopes/meade10.JPG',
   },
   {
     id: 'lunt-152-solar',
@@ -68,7 +68,7 @@ export const TELESCOPES_DATA: Telescope[] = [
       appearance: 'Pearl white tube with black and red accents',
       suppliedAccessories: 'Mounting rings with carry handle and 12-inch dovetail; reinforced fitted hard case; dust caps; manual',
     },
-    imagePlaceholder: 'lunt_152_solar.png',
+    image: '/images/telescopes/lunt.JPG',
   },
   {
     id: 'celestron-edgehd-8-inch',
@@ -92,6 +92,6 @@ export const TELESCOPES_DATA: Telescope[] = [
       compatibility: 'Native f/10; compatible with 0.7× reducer for f/7 and HyperStar/Fastar for f/2 wide-field imaging',
       quantity: 2,
     },
-    imagePlaceholder: 'celestron_edgehd_8inch.png',
+      image: '/images/telescopes/celestron.JPG',
   },
 ];

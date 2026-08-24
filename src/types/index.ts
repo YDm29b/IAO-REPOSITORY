@@ -97,6 +97,10 @@ export interface MoonCalculation {
   isAboveHorizon: boolean;
   statusText: string;
   ageDays?: number;
+  riseTimeStr?: string;       // local time only, e.g. "16:35" or "Does not rise today"
+  setTimeStr?: string;        // local time only, e.g. "02:30" or "Does not set today"
+  riseIsNextDay?: boolean;    // true if rise occurs on the following calendar day
+  setIsNextDay?: boolean;     // true if set occurs on the following calendar day
 }
 
 export interface SkyObject {

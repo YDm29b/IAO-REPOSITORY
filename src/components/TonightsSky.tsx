@@ -419,13 +419,20 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
       ctx.stroke();
     });
 
-    // 8. Draw Moon (Layered 3D Spherical Shading & Restrained Lunar Glow)
+    // 8. Draw Moon (Geometrically Accurate Phase Terminator & Layered 3D Shading)
     if (skyData.moon && skyData.moon.altitude !== undefined && skyData.moon.azimuth !== undefined && skyData.moon.isVisible) {
       const pos = projectAltAz(skyData.moon.altitude, skyData.moon.azimuth);
       const mRadius = 6.5 / Math.sqrt(zoom);
+      const frac = Math.max(0, Math.min(1, skyData.moon.phaseFraction ?? 0.5));
+      const isWaxing = typeof skyData.moon.isWaxing === 'boolean'
+        ? skyData.moon.isWaxing
+        : (skyData.moon.phaseAngleDegrees !== undefined
+            ? (skyData.moon.phaseAngleDegrees > 0 && skyData.moon.phaseAngleDegrees < 180)
+            : (skyData.moon.phaseName ? skyData.moon.phaseName.includes('Waxing') || skyData.moon.phaseName.includes('First Quarter') : true));
+      const termRx = Math.max(0.01, mRadius * Math.abs(2 * frac - 1));
 
       // Controlled Lunar Glow
-      const moonGlow = ctx.createRadialGradient(pos.x, pos.y, mRadius * 0.6, pos.x, pos.y, mRadius * 1.45);
+      const moonGlow = ctx.createRadialGradient(pos.x, pos.y, mRadius * 0.5, pos.x, pos.y, mRadius * 1.45);
       moonGlow.addColorStop(0, 'rgba(248, 250, 252, 0.28)');
       moonGlow.addColorStop(0.5, 'rgba(203, 213, 225, 0.09)');
       moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -434,27 +441,71 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
       ctx.arc(pos.x, pos.y, mRadius * 1.45, 0, 2 * Math.PI);
       ctx.fill();
 
-      // 3D Shaded Lunar Disc
-      const moonGrad = ctx.createRadialGradient(
-        pos.x - mRadius * 0.35,
-        pos.y - mRadius * 0.35,
-        0,
-        pos.x,
-        pos.y,
-        mRadius
-      );
-      moonGrad.addColorStop(0, '#ffffff');
-      moonGrad.addColorStop(0.5, '#e2e8f0');
-      moonGrad.addColorStop(0.85, '#94a3b8');
-      moonGrad.addColorStop(1, '#334155');
-      ctx.fillStyle = moonGrad;
+      // Base Dark Lunar Body Layer
+      ctx.fillStyle = '#080b18';
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, mRadius, 0, 2 * Math.PI);
       ctx.fill();
 
+      // Illuminated Phase Disc
+      if (frac > 0.01) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, mRadius, 0, 2 * Math.PI);
+        ctx.clip();
+
+        ctx.beginPath();
+        if (frac >= 0.99) {
+          ctx.arc(pos.x, pos.y, mRadius, 0, 2 * Math.PI);
+        } else if (isWaxing) {
+          // Right limb (clockwise from -PI/2 to PI/2)
+          ctx.arc(pos.x, pos.y, mRadius, -Math.PI / 2, Math.PI / 2, false);
+          // Terminator from Bottom to Top
+          if (frac < 0.5) {
+            // Crescent: curves to the right
+            ctx.ellipse(pos.x, pos.y, termRx, mRadius, 0, Math.PI / 2, -Math.PI / 2, false);
+          } else {
+            // Gibbous & First Quarter: curves to the left
+            ctx.ellipse(pos.x, pos.y, termRx, mRadius, 0, Math.PI / 2, -Math.PI / 2, true);
+          }
+        } else {
+          // Left limb (counter-clockwise from -PI/2 to PI/2)
+          ctx.arc(pos.x, pos.y, mRadius, -Math.PI / 2, Math.PI / 2, true);
+          // Terminator from Bottom to Top
+          if (frac < 0.5) {
+            // Crescent: curves to the left
+            ctx.ellipse(pos.x, pos.y, termRx, mRadius, 0, Math.PI / 2, -Math.PI / 2, true);
+          } else {
+            // Gibbous & Third Quarter: curves to the right
+            ctx.ellipse(pos.x, pos.y, termRx, mRadius, 0, Math.PI / 2, -Math.PI / 2, false);
+          }
+        }
+        ctx.closePath();
+
+        // 3D Spherical Light Gradient
+        const lightOffsetX = isWaxing ? mRadius * 0.35 : -mRadius * 0.35;
+        const moonGrad = ctx.createRadialGradient(
+          pos.x + lightOffsetX,
+          pos.y - mRadius * 0.25,
+          0,
+          pos.x,
+          pos.y,
+          mRadius
+        );
+        moonGrad.addColorStop(0, '#ffffff');
+        moonGrad.addColorStop(0.45, '#e2e8f0');
+        moonGrad.addColorStop(0.85, '#94a3b8');
+        moonGrad.addColorStop(1, '#475569');
+        ctx.fillStyle = moonGrad;
+        ctx.fill();
+        ctx.restore();
+      }
+
       // Subtle Outer Rim
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
       ctx.lineWidth = 1 / zoom;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, mRadius, 0, 2 * Math.PI);
       ctx.stroke();
     }
 

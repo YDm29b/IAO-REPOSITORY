@@ -94,28 +94,25 @@ export const Telescopes: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Stylized Visual Image Frame */}
-                  <div className="w-full h-44 sm:h-48 rounded-2xl bg-gradient-to-b from-white/5 to-transparent border border-white/10 flex flex-col items-center justify-center relative overflow-hidden mb-6 shadow-inner">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold-500/5 via-transparent to-transparent opacity-50"></div>
-                    
-                    <div className="relative z-10 w-14 h-14 rounded-2xl bg-black/40 backdrop-blur-sm border border-gold-500/30 flex items-center justify-center text-gold-400 mb-3 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
-                      {telescope.category === 'Solar Research' ? (
-                        <Sun className="w-7 h-7 text-amber-400" />
-                      ) : (
-                        <Eye className="w-7 h-7 text-gold-400" />
-                      )}
-                    </div>
+                  {/* Telescope Image */}
+<div className="w-full h-44 sm:h-48 rounded-2xl bg-slate-950 border border-white/10 relative overflow-hidden mb-6 shadow-inner">
+  
+  <img
+  src={telescope.image}
+  alt={telescope.title}
+  className="w-full h-full object-cover p-4"
+/>
 
-                    <div className="relative z-10 text-xs font-mono uppercase tracking-widest text-slate-300 font-medium opacity-80">
-                      {telescope.title}
-                    </div>
+  {/* Subtle overlay */}
+  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
 
-                    {telescope.quantity > 1 && (
-                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-medium backdrop-blur-md">
-                        2 UNIFIED UNITS
-                      </div>
-                    )}
-                  </div>
+  {/* Quantity badge */}
+  {telescope.quantity > 1 && (
+    <div className="absolute top-3 right-3 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-mono font-medium backdrop-blur-md">
+      2 UNITS
+    </div>
+  )}
+</div>
 
                   {/* Title & Subtitle */}
                   <h3 className="font-serif-display text-xl sm:text-2xl font-bold text-white mb-1.5 drop-shadow-md">
