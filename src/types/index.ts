@@ -101,7 +101,7 @@ export interface MoonCalculation {
 
 export interface SkyObject {
   name: string;
-  type: 'star' | 'planet' | 'moon' | 'messier' | 'nebula' | 'galaxy' | 'cluster' | 'double-star';
+  type: 'star' | 'planet' | 'moon' | 'sun' | 'messier' | 'nebula' | 'galaxy' | 'cluster' | 'double-star';
   ra: number; // in hours
   dec: number; // in degrees
   mag: number;
@@ -114,7 +114,7 @@ export interface CelestialTarget {
   id: string;
   name: string;
   catalogId?: string;
-  type: 'planet' | 'moon' | 'star' | 'double-star' | 'nebula' | 'galaxy' | 'cluster';
+  type: 'planet' | 'moon' | 'sun' | 'star' | 'double-star' | 'nebula' | 'galaxy' | 'cluster';
   categoryLabel: string;
   constellation: string;
   mag: number;

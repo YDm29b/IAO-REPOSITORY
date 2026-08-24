@@ -1,6 +1,6 @@
 import * as Astronomy from 'astronomy-engine';
 import { OBSERVATORY_CONFIG } from '../config/observatory';
-import { MoonCalculation, SkyObject, CelestialTarget } from '../types';
+import { MoonCalculation, SkyObject, CelestialTarget } from '../types/index';
 
 /**
  * Production-Grade Astronomy & Ephemeris Service for IAO (Islamabad Astronomical Observatory)
@@ -50,6 +50,17 @@ export const IAO_TELESCOPES = {
     resolvingPowerArcsec: 0.57,
     limitingMag: 14.0,
     specialty: 'Wide-field flat-field imaging, extended open clusters, large emission nebulae, and astro-photometric tracking.',
+  },
+  LUNT_152: {
+    id: 'lunt-152',
+    name: 'Lunt 152 mm Doppler True Solar Telescope',
+    apertureMm: 152,
+    focalLengthMm: 900,
+    focalRatio: 'f/6',
+    mount: 'Precision Equatorial (EQ)',
+    resolvingPowerArcsec: 0.76,
+    limitingMag: 0,
+    specialty: 'Dedicated H-alpha (656.28 nm) Doppler True solar chromosphere observation, prominence flares, filaments, and granulation.',
   },
 };
 
@@ -454,9 +465,17 @@ export function calculateMoonData(date: Date = new Date()): MoonCalculation | nu
  */
 function getStarOrPlanetTelescopeSuitability(
   name: string,
-  type: 'planet' | 'moon' | 'star' | 'double-star',
+  type: 'planet' | 'moon' | 'star' | 'double-star' | 'sun',
   isDouble?: boolean
 ): { bestTelescope: string; telescopeReason: string; compatibleTelescopes: string[] } {
+  if (type === 'sun' || name === 'Sun') {
+    return {
+      bestTelescope: IAO_TELESCOPES.LUNT_152.name,
+      telescopeReason: 'Internal Doppler True pressure-tuned Hydrogen-Alpha etalon (<0.65 Å bandpass) safely isolates solar chromosphere details, spicules, and prominence flares.',
+      compatibleTelescopes: [IAO_TELESCOPES.EDGE_HD_8.name],
+    };
+  }
+
   if (type === 'moon') {
     return {
       bestTelescope: IAO_TELESCOPES.MEADE_10.name,
@@ -633,6 +652,7 @@ export function calculateVisibleSkyObjects(date: Date = new Date()): {
   stars: Array<SkyObject & { spectralColor: string; isVisible: boolean; isWithinWindow: boolean }>;
   planets: Array<SkyObject & { isVisible: boolean; isWithinWindow: boolean; color: string }>;
   moon: SkyObject & { isVisible: boolean; isWithinWindow: boolean; phaseFraction: number; phaseName: string };
+  sun: SkyObject & { isVisible: boolean; isWithinWindow: boolean };
   deepSky: Array<SkyObject & { isVisible: boolean; isWithinWindow: boolean; categoryLabel: string }>;
   observableTargets: CelestialTarget[];
   allSkyTargets: CelestialTarget[];
@@ -829,7 +849,53 @@ export function calculateVisibleSkyObjects(date: Date = new Date()): {
     phaseName: moonPhaseName,
   };
 
-  // 4. Calculate Deep-Sky Objects
+  // 4. Calculate Sun
+  const sunEq = Astronomy.Equator(Astronomy.Body.Sun, date, observer, true, true);
+  const sunHor = Astronomy.Horizon(date, observer, sunEq.ra, sunEq.dec, 'normal');
+  const sunAltitude = parseFloat(sunHor.altitude.toFixed(1));
+  const sunAzimuth = parseFloat(sunHor.azimuth.toFixed(1));
+  const sunIsAboveHorizon = sunAltitude > 0;
+  const sunIsWithinWindow = sunAltitude >= MIN_ALT && sunAltitude <= MAX_ALT;
+
+  const sunSuitability = getStarOrPlanetTelescopeSuitability('Sun', 'sun');
+  const sunTarget: CelestialTarget = {
+    id: 'solar-sun',
+    name: 'The Sun',
+    catalogId: 'Sol (Host Star)',
+    type: 'sun',
+    categoryLabel: 'Solar Star',
+    constellation: '',
+    mag: -26.7,
+    altitude: sunAltitude,
+    azimuth: sunAzimuth,
+    raHours: sunEq.ra,
+    decDeg: sunEq.dec,
+    isWithinIAOWindow: sunIsWithinWindow,
+    isAboveHorizon: sunIsAboveHorizon,
+    bestTelescope: sunSuitability.bestTelescope,
+    telescopeReason: sunSuitability.telescopeReason,
+    compatibleTelescopes: sunSuitability.compatibleTelescopes,
+    description: 'Host star of the Solar System. High-magnification H-Alpha Doppler solar observation reveals dynamic solar flares, prominences, filaments, and active region sunspots.',
+    visibilityQuality: 'prime',
+    contrastNote: 'Dominant daytime luminary. Observable safely with IAO dedicated H-alpha solar telescope or certified solar filters.',
+    isLightPollutionPass: true,
+  };
+
+  allSkyTargets.push(sunTarget);
+
+  const sun = {
+    name: 'Sun',
+    type: 'sun' as const,
+    ra: sunEq.ra,
+    dec: sunEq.dec,
+    mag: -26.7,
+    altitude: sunAltitude,
+    azimuth: sunAzimuth,
+    isVisible: sunIsAboveHorizon,
+    isWithinWindow: sunIsWithinWindow,
+  };
+
+  // 5. Calculate Deep-Sky Objects
   const deepSky = DEEP_SKY_CATALOGUE.map((dso) => {
     const hor = Astronomy.Horizon(date, observer, dso.raHours, dso.decDeg, 'normal');
     const altitude = parseFloat(hor.altitude.toFixed(1));
@@ -887,16 +953,17 @@ export function calculateVisibleSkyObjects(date: Date = new Date()): {
     };
   });
 
-  // 5. Filter for ONLY targets strictly within IAO's 35°–65° observing window AND passing the Light Pollution contrast filter
+  // 6. Filter for ONLY targets strictly within IAO's 35°–65° observing window AND passing the Light Pollution contrast filter
   const observableTargets = allSkyTargets
     .filter((target) => target.isWithinIAOWindow && target.bestTelescope && target.isLightPollutionPass)
     .sort((a, b) => {
-      // Prioritize Moon and Planets first, then by visual magnitude
+      // Prioritize Sun, Moon and Planets first, then by visual magnitude
       const typeRank = (t: string) => {
-        if (t === 'moon') return 1;
-        if (t === 'planet') return 2;
-        if (t === 'nebula' || t === 'galaxy' || t === 'cluster') return 3;
-        return 4;
+        if (t === 'sun') return 1;
+        if (t === 'moon') return 2;
+        if (t === 'planet') return 3;
+        if (t === 'nebula' || t === 'galaxy' || t === 'cluster') return 4;
+        return 5;
       };
       const rankDiff = typeRank(a.type) - typeRank(b.type);
       if (rankDiff !== 0) return rankDiff;
@@ -907,6 +974,7 @@ export function calculateVisibleSkyObjects(date: Date = new Date()): {
     stars,
     planets,
     moon,
+    sun,
     deepSky,
     observableTargets,
     allSkyTargets,

@@ -53,7 +53,7 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
     if (!skyData) return [];
     const list = skyData.observableTargets;
     if (selectedCategory === 'all') return list;
-    if (selectedCategory === 'planets-moon') return list.filter(t => t.type === 'planet' || t.type === 'moon');
+    if (selectedCategory === 'planets-moon') return list.filter(t => t.type === 'planet' || t.type === 'moon' || t.type === 'sun');
     if (selectedCategory === 'deep-sky') return list.filter(t => t.type === 'nebula' || t.type === 'galaxy' || t.type === 'cluster');
     if (selectedCategory === 'stars') return list.filter(t => t.type === 'star' || t.type === 'double-star');
     return list;
@@ -270,48 +270,15 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
 
     const starMapPos: Record<string, { x: number; y: number; isVisible: boolean }> = {};
 
-    // 4. Draw Stars
+    // Collect Star Positions first for constellation linking
     skyData.stars.forEach((star) => {
       if (star.altitude === undefined || star.azimuth === undefined) return;
       const pos = projectAltAz(star.altitude, star.azimuth);
       starMapPos[star.name] = { x: pos.x, y: pos.y, isVisible: star.isVisible };
-
-      if (!star.isVisible) return;
-
-      const baseStarRadius = Math.max(0.5, 3.5 - star.mag * 0.7);
-      const starRadius = baseStarRadius / Math.sqrt(zoom); // slightly scale down relative to zoom
-
-      // Enhanced star glow
-      const glowRadius = starRadius * (star.mag < 1 ? 5 : 3);
-      const starGradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, glowRadius);
-      starGradient.addColorStop(0, star.spectralColor || '#ffffff');
-      starGradient.addColorStop(0.2, (star.spectralColor || '#ffffff') + 'CC');
-      starGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      
-      ctx.fillStyle = starGradient;
-      ctx.beginPath();
-      ctx.arc(pos.x, pos.y, glowRadius, 0, 2 * Math.PI);
-      ctx.fill();
-
-      // Solid core for bright stars
-      if (star.mag < 2) {
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, starRadius * 0.5, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-
-      // Label prominent stars
-      if (star.mag < 1.4 || (star.isWithinWindow && zoom > 1.5)) {
-        ctx.font = `${Math.max(9 / zoom, 5)}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = star.isWithinWindow ? 'rgba(254, 240, 138, 0.9)' : 'rgba(203, 213, 225, 0.75)';
-        ctx.textAlign = 'center';
-        ctx.fillText(star.name, pos.x, pos.y + (starRadius + 6) / Math.sqrt(zoom));
-      }
     });
 
-    // 5. Draw Constellation Link Lines (more elegant)
-    ctx.strokeStyle = 'rgba(126, 203, 247, 0.15)';
+    // 4. Draw Constellation Link Lines (underneath stars)
+    ctx.strokeStyle = 'rgba(126, 203, 247, 0.16)';
     ctx.lineWidth = 1 / zoom;
     ctx.setLineDash([2 / zoom, 4 / zoom]);
 
@@ -327,94 +294,305 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
     });
     ctx.setLineDash([]);
 
-    // 6. Draw Deep-Sky Objects
+    // 5. Draw Deep-Sky Objects (Bodies & Layered Glows)
     skyData.deepSky.forEach((dso) => {
       if (dso.altitude === undefined || dso.azimuth === undefined || !dso.isVisible) return;
       const pos = projectAltAz(dso.altitude, dso.azimuth);
+      const dsoRadius = 3.8 / Math.sqrt(zoom);
 
-      const dsoRadius = 4 / Math.sqrt(zoom);
+      // Subtle Outer Nebula Glow
+      const dsoGlow = ctx.createRadialGradient(pos.x, pos.y, dsoRadius * 0.4, pos.x, pos.y, dsoRadius * 1.6);
+      dsoGlow.addColorStop(0, dso.isWithinWindow ? 'rgba(56, 189, 248, 0.25)' : 'rgba(56, 189, 248, 0.1)');
+      dsoGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = dsoGlow;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, dsoRadius * 1.6, 0, 2 * Math.PI);
+      ctx.fill();
 
-      // Distinct glyph for DSO (dashed ellipse/circle)
-      ctx.strokeStyle = dso.isWithinWindow ? 'rgba(56, 189, 248, 0.8)' : 'rgba(56, 189, 248, 0.4)';
-      ctx.lineWidth = 1.2 / zoom;
+      // Distinct glyph for DSO (dashed concentric target ring)
+      ctx.strokeStyle = dso.isWithinWindow ? 'rgba(56, 189, 248, 0.85)' : 'rgba(56, 189, 248, 0.45)';
+      ctx.lineWidth = 1.1 / zoom;
       ctx.setLineDash([2 / zoom, 2 / zoom]);
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, dsoRadius + 2 / zoom, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = dso.isWithinWindow ? 'rgba(56, 189, 248, 0.3)' : 'rgba(56, 189, 248, 0.1)';
+      // Inner disc
+      ctx.fillStyle = dso.isWithinWindow ? 'rgba(56, 189, 248, 0.22)' : 'rgba(56, 189, 248, 0.08)';
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, dsoRadius, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Core point
-      ctx.fillStyle = dso.isWithinWindow ? '#38bdf8' : 'rgba(56, 189, 248, 0.6)';
+      // Sharp Core Point
+      ctx.fillStyle = dso.isWithinWindow ? '#38bdf8' : 'rgba(56, 189, 248, 0.7)';
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, 1 / zoom, 0, 2 * Math.PI);
+      ctx.arc(pos.x, pos.y, 1.2 / zoom, 0, 2 * Math.PI);
       ctx.fill();
-
-      // Label
-      if (dso.isWithinWindow || zoom > 2) {
-        ctx.font = `bold ${Math.max(9 / zoom, 5)}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = '#7dd3fc';
-        ctx.textAlign = 'center';
-        ctx.fillText(dso.name, pos.x, pos.y + (dsoRadius + 8) / Math.sqrt(zoom));
-      }
     });
 
-    // 7. Draw Visible Planets
+    // 6. Draw Stars (Layered Rendering: Controlled Halo ~1.4x-1.8x, Defined 3D Core)
+    skyData.stars.forEach((star) => {
+      if (star.altitude === undefined || star.azimuth === undefined || !star.isVisible) return;
+      const pos = starMapPos[star.name];
+      if (!pos) return;
+
+      const baseStarRadius = Math.max(0.6, 2.7 - star.mag * 0.45);
+      const starRadius = baseStarRadius / Math.sqrt(zoom);
+
+      // Substantially tightened atmospheric glow halo (~1.4x–1.8x core, restrained opacity)
+      const glowMultiplier = star.mag < 0 ? 1.75 : star.mag < 1.5 ? 1.5 : 1.3;
+      const glowRadius = starRadius * glowMultiplier;
+
+      const starGlow = ctx.createRadialGradient(pos.x, pos.y, starRadius * 0.3, pos.x, pos.y, glowRadius);
+      const spectral = star.spectralColor || '#ffffff';
+      starGlow.addColorStop(0, spectral);
+      starGlow.addColorStop(0.35, spectral + '44');
+      starGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      ctx.fillStyle = starGlow;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, glowRadius, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Defined Luminous Star Core
+      const coreGrad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, starRadius);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.55, spectral);
+      coreGrad.addColorStop(1, spectral);
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, starRadius, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+
+    // 7. Draw Visible Planets (Layered 3D Spherical Shading & Restrained Glow)
     skyData.planets.forEach((planet) => {
       if (planet.altitude === undefined || planet.azimuth === undefined || !planet.isVisible) return;
       const pos = projectAltAz(planet.altitude, planet.azimuth);
-      
-      const pRadius = 3.5 / Math.sqrt(zoom);
+      const pRadius = 3.6 / Math.sqrt(zoom);
 
-      // Planet glow ring
-      ctx.strokeStyle = planet.color;
-      ctx.lineWidth = (planet.isWithinWindow ? 1.5 : 1) / zoom;
+      // Controlled Planet Atmospheric Glow
+      const pGlowRadius = pRadius * 1.45;
+      const pGlowGrad = ctx.createRadialGradient(pos.x, pos.y, pRadius * 0.6, pos.x, pos.y, pGlowRadius);
+      pGlowGrad.addColorStop(0, planet.color + '55');
+      pGlowGrad.addColorStop(1, planet.color + '00');
+      ctx.fillStyle = pGlowGrad;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, pRadius + 2.5 / zoom, 0, 2 * Math.PI);
-      ctx.stroke();
+      ctx.arc(pos.x, pos.y, pGlowRadius, 0, 2 * Math.PI);
+      ctx.fill();
 
-      // Planet Body
-      ctx.fillStyle = planet.color;
+      // Saturnian Ring System (if Saturn)
+      if (planet.name === 'Saturn') {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(-Math.PI / 7);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, pRadius * 2.2, pRadius * 0.7, 0, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(238, 221, 153, 0.75)';
+        ctx.lineWidth = 1 / zoom;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3D Spherical Shaded Planet Body
+      const pBody = ctx.createRadialGradient(
+        pos.x - pRadius * 0.35,
+        pos.y - pRadius * 0.35,
+        0,
+        pos.x,
+        pos.y,
+        pRadius
+      );
+      pBody.addColorStop(0, '#ffffff');
+      pBody.addColorStop(0.25, planet.color);
+      pBody.addColorStop(0.85, planet.color);
+      pBody.addColorStop(1, 'rgba(2, 6, 18, 0.6)');
+      ctx.fillStyle = pBody;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, pRadius, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Label
-      ctx.font = `bold ${Math.max(10 / zoom, 6)}px "Plus Jakarta Sans", sans-serif`;
-      ctx.fillStyle = planet.color;
-      ctx.textAlign = 'center';
-      ctx.fillText(planet.name, pos.x, pos.y + (pRadius + 10) / Math.sqrt(zoom));
+      // Subtle Outer Rim
+      ctx.strokeStyle = planet.color + 'bb';
+      ctx.lineWidth = (planet.isWithinWindow ? 1.2 : 0.8) / zoom;
+      ctx.stroke();
     });
 
-    // 8. Draw Moon
+    // 8. Draw Moon (Layered 3D Spherical Shading & Restrained Lunar Glow)
     if (skyData.moon && skyData.moon.altitude !== undefined && skyData.moon.azimuth !== undefined && skyData.moon.isVisible) {
       const pos = projectAltAz(skyData.moon.altitude, skyData.moon.azimuth);
-      const mRadius = 7 / Math.sqrt(zoom);
+      const mRadius = 6.5 / Math.sqrt(zoom);
 
-      // Moon glow
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      // Controlled Lunar Glow
+      const moonGlow = ctx.createRadialGradient(pos.x, pos.y, mRadius * 0.6, pos.x, pos.y, mRadius * 1.45);
+      moonGlow.addColorStop(0, 'rgba(248, 250, 252, 0.28)');
+      moonGlow.addColorStop(0.5, 'rgba(203, 213, 225, 0.09)');
+      moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = moonGlow;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, mRadius + 5 / zoom, 0, 2 * Math.PI);
+      ctx.arc(pos.x, pos.y, mRadius * 1.45, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Moon Body
-      ctx.fillStyle = '#f8fafc';
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-      ctx.shadowBlur = 10 / zoom;
+      // 3D Shaded Lunar Disc
+      const moonGrad = ctx.createRadialGradient(
+        pos.x - mRadius * 0.35,
+        pos.y - mRadius * 0.35,
+        0,
+        pos.x,
+        pos.y,
+        mRadius
+      );
+      moonGrad.addColorStop(0, '#ffffff');
+      moonGrad.addColorStop(0.5, '#e2e8f0');
+      moonGrad.addColorStop(0.85, '#94a3b8');
+      moonGrad.addColorStop(1, '#334155');
+      ctx.fillStyle = moonGrad;
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, mRadius, 0, 2 * Math.PI);
       ctx.fill();
-      ctx.shadowBlur = 0;
 
-      // Label
-      ctx.font = `bold ${Math.max(10 / zoom, 6)}px "Plus Jakarta Sans", sans-serif`;
-      ctx.fillStyle = '#f8fafc';
+      // Subtle Outer Rim
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = 1 / zoom;
+      ctx.stroke();
+    }
+
+    // 9. Draw Sun (Dynamic Ephemeris Calculation, Solar Coronal Glow & Warm 3D Body)
+    if (skyData.sun && skyData.sun.altitude !== undefined && skyData.sun.azimuth !== undefined && skyData.sun.isVisible) {
+      const sunPos = projectAltAz(skyData.sun.altitude, skyData.sun.azimuth);
+      const sRadius = 7.2 / Math.sqrt(zoom);
+
+      // Controlled Solar Coronal Glow (~1.7x core)
+      const sGlowRadius = sRadius * 1.7;
+      const sunGlow = ctx.createRadialGradient(sunPos.x, sunPos.y, sRadius * 0.5, sunPos.x, sunPos.y, sGlowRadius);
+      sunGlow.addColorStop(0, 'rgba(251, 191, 36, 0.35)');
+      sunGlow.addColorStop(0.5, 'rgba(245, 158, 11, 0.12)');
+      sunGlow.addColorStop(1, 'rgba(217, 119, 6, 0)');
+      ctx.fillStyle = sunGlow;
+      ctx.beginPath();
+      ctx.arc(sunPos.x, sunPos.y, sGlowRadius, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Subtle Solar Corona Rays
+      ctx.save();
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+      ctx.lineWidth = 1 / zoom;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4;
+        const innerR = sRadius + 1 / zoom;
+        const outerR = sRadius + 3.2 / zoom;
+        ctx.beginPath();
+        ctx.moveTo(sunPos.x + innerR * Math.cos(angle), sunPos.y + innerR * Math.sin(angle));
+        ctx.lineTo(sunPos.x + outerR * Math.cos(angle), sunPos.y + outerR * Math.sin(angle));
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 3D Luminous Warm Solar Body
+      const sunGrad = ctx.createRadialGradient(sunPos.x, sunPos.y, 0, sunPos.x, sunPos.y, sRadius);
+      sunGrad.addColorStop(0, '#ffffff');
+      sunGrad.addColorStop(0.3, '#fef08a');
+      sunGrad.addColorStop(0.7, '#fbbf24');
+      sunGrad.addColorStop(1, '#ea580c');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(sunPos.x, sunPos.y, sRadius, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Sharp Solar Edge
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 1.2 / zoom;
+      ctx.stroke();
+    }
+
+    // 10. DEDICATED TOP-LAYER LABEL PASS
+    // Renders ALL celestial text labels in a final top layer above all object halos and bodies.
+    // Utilizes dark contrast backing stroke to guarantee complete readability for Capella, Sirius,
+    // Aldebaran, Betelgeuse, Rigel, Arcturus, Spica, planets, Moon, and Sun.
+    const drawLabel = (
+      text: string,
+      x: number,
+      y: number,
+      color: string,
+      isBold: boolean = false,
+      fontSizePx: number = 9
+    ) => {
+      const size = Math.max(fontSizePx / zoom, 5.5);
+      ctx.save();
+      ctx.font = `${isBold ? 'bold ' : ''}${size}px "Plus Jakarta Sans", sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(`Moon (${Math.round(skyData.moon.phaseFraction * 100)}%)`, pos.x, pos.y + (mRadius + 9) / Math.sqrt(zoom));
+      ctx.textBaseline = 'middle';
+
+      // Dark backing outline for maximum contrast against any sky glow
+      ctx.lineJoin = 'round';
+      ctx.miterLimit = 2;
+      ctx.strokeStyle = 'rgba(2, 6, 18, 0.95)';
+      ctx.lineWidth = Math.max(2.8 / zoom, 1.8);
+      ctx.strokeText(text, x, y);
+
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    };
+
+    // 10a. Deep-Sky Object Labels
+    skyData.deepSky.forEach((dso) => {
+      if (dso.altitude === undefined || dso.azimuth === undefined || !dso.isVisible) return;
+      if (dso.isWithinWindow || zoom > 1.8) {
+        const pos = projectAltAz(dso.altitude, dso.azimuth);
+        const dsoRadius = 3.8 / Math.sqrt(zoom);
+        drawLabel(dso.name, pos.x, pos.y + (dsoRadius + 7.5) / Math.sqrt(zoom), '#7dd3fc', true, 9);
+      }
+    });
+
+    // 10b. Prominent Star Labels (e.g. Sirius, Capella, Arcturus, Aldebaran, Rigel, Betelgeuse, Spica)
+    skyData.stars.forEach((star) => {
+      if (star.altitude === undefined || star.azimuth === undefined || !star.isVisible) return;
+      if (star.mag < 1.4 || (star.isWithinWindow && zoom > 1.4)) {
+        const pos = starMapPos[star.name];
+        if (!pos) return;
+        const baseStarRadius = Math.max(0.6, 2.7 - star.mag * 0.45);
+        const starRadius = baseStarRadius / Math.sqrt(zoom);
+        const labelColor = star.isWithinWindow ? '#fef08a' : '#cbd5e1';
+        drawLabel(star.name, pos.x, pos.y + (starRadius + 6.5) / Math.sqrt(zoom), labelColor, false, 9);
+      }
+    });
+
+    // 10c. Planet Labels
+    skyData.planets.forEach((planet) => {
+      if (planet.altitude === undefined || planet.azimuth === undefined || !planet.isVisible) return;
+      const pos = projectAltAz(planet.altitude, planet.azimuth);
+      const pRadius = 3.6 / Math.sqrt(zoom);
+      drawLabel(planet.name, pos.x, pos.y + (pRadius + 8.0) / Math.sqrt(zoom), planet.color, true, 9.5);
+    });
+
+    // 10d. Moon Label
+    if (skyData.moon && skyData.moon.altitude !== undefined && skyData.moon.azimuth !== undefined && skyData.moon.isVisible) {
+      const pos = projectAltAz(skyData.moon.altitude, skyData.moon.azimuth);
+      const mRadius = 6.5 / Math.sqrt(zoom);
+      drawLabel(
+        `Moon (${Math.round(skyData.moon.phaseFraction * 100)}%)`,
+        pos.x,
+        pos.y + (mRadius + 9.0) / Math.sqrt(zoom),
+        '#f8fafc',
+        true,
+        9.5
+      );
+    }
+
+    // 10e. Sun Label
+    if (skyData.sun && skyData.sun.altitude !== undefined && skyData.sun.azimuth !== undefined && skyData.sun.isVisible) {
+      const sunPos = projectAltAz(skyData.sun.altitude, skyData.sun.azimuth);
+      const sRadius = 7.2 / Math.sqrt(zoom);
+      drawLabel(
+        'Sun',
+        sunPos.x,
+        sunPos.y + (sRadius + 9.0) / Math.sqrt(zoom),
+        '#fde047',
+        true,
+        10
+      );
     }
 
     ctx.restore();
@@ -567,6 +745,11 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-slate-300 shadow-[0_0_4px_#cbd5e1]" /> Moon
                 </span>
+                {skyData?.sun?.isVisible && (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_4px_#f59e0b]" /> Sun
+                  </span>
+                )}
               </div>
               <span className="font-mono text-[11px] flex flex-col items-end text-right">
                 <span>Alt-Az Stereographic Projection</span>
@@ -613,7 +796,7 @@ export const TonightsSky: React.FC<TonightsSkyProps> = ({ onNavigatePage }) => {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Planets & Moon
+                  Planets, Moon & Sun
                 </button>
                 <button
                   onClick={() => setSelectedCategory('deep-sky')}

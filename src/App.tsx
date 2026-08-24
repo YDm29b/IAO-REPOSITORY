@@ -14,6 +14,7 @@ import { Education } from './components/Education';
 import { Resources } from './components/Resources';
 import { Booking } from './components/Booking';
 import { Newsletter } from './components/Newsletter';
+import { Credits } from './components/Credits';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 
@@ -30,7 +31,7 @@ export function App() {
       const fullHash = window.location.hash.replace('#/', '').replace('#', '');
       const [route, queryString] = fullHash.split('?');
       
-      if (['book-session', 'education', 'resources', 'newsletter', 'light-pollution', 'admin'].includes(route)) {
+      if (['book-session', 'education', 'resources', 'newsletter', 'light-pollution', 'credits', 'admin'].includes(route)) {
         setCurrentRoute(route);
         if (route === 'education' && queryString) {
           const params = new URLSearchParams(queryString);
@@ -120,6 +121,8 @@ export function App() {
           <Booking onNavigateHome={() => navigateToPage('home')} />
         ) : currentRoute === 'newsletter' ? (
           <Newsletter onNavigateHome={() => navigateToPage('home')} />
+        ) : currentRoute === 'credits' ? (
+          <Credits onNavigateHome={() => navigateToPage('home')} />
         ) : currentRoute === 'admin' ? (
           adminToken ? (
             <AdminDashboard 

@@ -180,6 +180,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigatePage }) => {
             <span>Academic & Public Outreach Platform</span>
             <span>•</span>
             <button
+              onClick={() => onNavigatePage('credits')}
+              className="text-slate-500 hover:text-gold-400 font-mono transition-colors"
+            >
+              Website Credits
+            </button>
+            <span>•</span>
+            <button
               onClick={() => onNavigatePage('admin')}
               className="text-slate-500 hover:text-gold-400 font-mono transition-colors"
             >
