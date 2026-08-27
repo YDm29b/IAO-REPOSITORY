@@ -4,7 +4,7 @@ Official web platform for the **IST Astronomical Observatory (IAO)** at the Inst
 
 ---
 
-## 🔭 Features
+## Features
 
 - **Atmospheric Observatory Hero**: Layered cinematic night sky with dynamic starry background, subtle periodic shooting stars, horizon skyline, satellite dish silhouette with Alt/Az tracking reticles, observatory deck with perimeter red LED strip lighting, and realistic stylized silhouettes of the 16-inch Meade and Celestron EdgeHD telescopes.
 - **Dynamic Browser-Side Live Moon Engine**: Visually rendered in the hero only when lunar altitude at IAO is between **35° and 65°**, computing phase angles, illumination percentages, and topocentric coordinates in the browser with zero quota-limited API dependencies.
@@ -17,7 +17,7 @@ Official web platform for the **IST Astronomical Observatory (IAO)** at the Inst
 
 ---
 
-## 🚀 Quick Start & Development
+## Quick Start & Development
 
 ### 1. Install Dependencies
 ```bash
@@ -38,7 +38,7 @@ npm run preview
 
 ---
 
-## 📋 Comprehensive Audit of Items Pending Official IAO Approval
+## Comprehensive Audit of Items Pending Official IAO Approval
 
 The following items are currently configured with safe, clearly-marked temporary development placeholders and require official material or verification from the IAO administration before production launch:
 
@@ -58,7 +58,7 @@ The following items are currently configured with safe, clearly-marked temporary
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── src/
